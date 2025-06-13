@@ -11,7 +11,7 @@ def hello():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Flask Time App</title>
+        <title>Flask Time Application</title>
         <script>
             function updateTime() {{
                 const now = new Date();
