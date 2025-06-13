@@ -16,7 +16,7 @@ def hello():
             function updateTime() {{
                 const now = new Date();
                 const time = now.toLocaleTimeString();
-                document.getElementById("time").innerText = time;
+                document.getElementById("Time").innerText = time;
             }}
             setInterval(updateTime, 1000);
         </script>
