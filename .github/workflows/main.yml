@@ -227,12 +227,12 @@ jobs:
           body: |
             CI/CD Pipeline completed for Flask App (Build #${{ github.run_number }}).
             Commit Message: ${{ github.event.head_commit.message }}
-            - Build and Test: ${{ jobs.build-and-test.status }}
-            - SonarQube Scan: ${{ jobs.sonarqube-scan.status }}
-            - Trivy Filesystem Scan: ${{ jobs.trivy-fs-scan.status }}
-            - Talisman Scan: ${{ jobs.talisman-scan.status }}
-            - OWASP ZAP Scan: ${{ jobs.owasp-zap-scan.status }}
-            - Docker Build and Image Scan: ${{ jobs.docker-build-push.status }}
+            - Build and Test: ${{ needs.build-and-test.result }}
+            - SonarQube Scan: ${{ needs.sonarqube-scan.result }}
+            - Trivy Filesystem Scan: ${{ needs.trivy-fs-scan.result }}
+            - Talisman Scan: ${{ needs.talisman-scan.result }}
+            - OWASP ZAP Scan: ${{ needs.owasp-zap-scan.result }}
+            - Docker Build and Image Scan: ${{ needs.docker-build-push.result }}
             See attached reports for details.
           attachments: |
             sonarqube-report-${{ github.run_number }}.txt,
