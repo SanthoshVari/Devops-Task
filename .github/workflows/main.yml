@@ -176,12 +176,12 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/flask-app:${{ github.sha }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/flask-app:${{ github.run_number }}
 
       - name: Run Trivy image scan
         uses: aquasecurity/trivy-action@0.30.0
         with:
-          image-ref: ${{ secrets.DOCKER_USERNAME }}/flask-app:${{ github.sha }}
+          image-ref: ${{ secrets.DOCKER_USERNAME }}/flask-app:${{ github.run_number }}
           format: 'json'
           output: 'trivy-image-results-${{ github.run_number }}.json'
           severity: 'HIGH,CRITICAL'
