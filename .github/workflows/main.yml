@@ -30,30 +30,29 @@ jobs:
           pytest --version  # Replace with pytest tests/test_app.py
 
   sonarqube-scan:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for SonarQube to analyze git history
 
-    - name: Set up JDK
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@v2
-      with:
-        args: >
-          -Dsonar.projectKey=SanthoshVari_Devops-task
-          -Dsonar.organization=your_org_name
-          -Dsonar.sources=.
-          -Dsonar.projectVersion=${{ github.run_number }}
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          args: >
+            -Dsonar.projectKey=SanthoshVari_Devops-task
+            -Dsonar.organization=your_org_name
+            -Dsonar.sources=.
+            -Dsonar.projectVersion=${{ github.run_number }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       
       - name: Upload SonarQube report to S3
         env:
