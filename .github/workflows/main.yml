@@ -48,7 +48,7 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=SanthoshVari_Devops-task-sonar
-            -Dsonar.organization=SanthoshVari
+            -Dsonar.organization=santhoshvari
             -Dsonar.sources=.
             -Dsonar.projectVersion=${{ github.run_number }}
         env:
@@ -105,6 +105,10 @@ jobs:
       - name: Run Talisman scan
         run: |
           talisman --scan --reportDirectory . --reportFile talisman-report-${{ github.run_number }}.json || true
+      - name: Run Talisman
+        run: |
+          talisman -p . --report=talisman-report-10.json
+
       - name: Debug - Check Report File
         run: ls -l talisman-report-${{ github.run_number }}.json || echo "File not found!"
       - name: Upload Talisman report to S3
@@ -151,9 +155,15 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+     
         run: |
-          ls -R
-          aws s3 cp $(find . -name "zap-report-${{ github.run_number }}.html") s3://${{ secrets.S3_BUCKET }}/zap-report-${{ github.run_number }}.html
+          FILE=$(find . -name "zap-report-10.html")
+          if [ -f "$FILE" ]; then
+            aws s3 cp "$FILE" s3://your-bucket-name/zap-report-10.html
+          else
+            echo "ZAP report not found!"
+          fi
+
 
   docker-build-push:
     runs-on: ubuntu-latest
