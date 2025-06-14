@@ -47,8 +47,8 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
-            -Dsonar.projectKey=SanthoshVari_Devops-task
-            -Dsonar.organization=your_org_name
+            -Dsonar.projectKey=SanthoshVari_Devops-task-sonar
+            -Dsonar.organization=SanthoshVari
             -Dsonar.sources=.
             -Dsonar.projectVersion=${{ github.run_number }}
         env:
