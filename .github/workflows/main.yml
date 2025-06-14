@@ -105,7 +105,8 @@ jobs:
       - name: Run Talisman scan
         run: |
           talisman --scan --reportDirectory . --reportFile talisman-report-${{ github.run_number }}.json || true
-
+      - name: Debug - Check Report File
+        run: ls -l talisman-report-${{ github.run_number }}.json || echo "File not found!"
       - name: Upload Talisman report to S3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -141,6 +142,9 @@ jobs:
           target: 'http://localhost:5000'
           fail_action: false
           cmd_options: '-r zap-report-${{ github.run_number }}.html'
+      
+      - name: Debug - List generated files
+        run: find . -type f
 
       - name: Upload OWASP ZAP report to S3
         env:
@@ -148,7 +152,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          aws s3 cp zap-report-${{ github.run_number }}.html s3://${{ secrets.S3_BUCKET }}/zap-report-${{ github.run_number }}.html
+          ls -R
+          aws s3 cp $(find . -name "zap-report-${{ github.run_number }}.html") s3://${{ secrets.S3_BUCKET }}/zap-report-${{ github.run_number }}.html
 
   docker-build-push:
     runs-on: ubuntu-latest
