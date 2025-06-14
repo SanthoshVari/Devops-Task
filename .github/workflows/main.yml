@@ -107,7 +107,7 @@ jobs:
           talisman --scan --reportDirectory . --reportFile talisman-report-${{ github.run_number }}.json || true
       - name: Run Talisman
         run: |
-          talisman -p . --report=talisman-report-10.json
+          talisman -p . --report=talisman-report-${{ github.run_number }}.json
 
       - name: Debug - Check Report File
         run: ls -l talisman-report-${{ github.run_number }}.json || echo "File not found!"
@@ -157,7 +157,7 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
      
         run: |
-          FILE=$(find . -name "zap-report-10.html")
+          FILE=$(find . -name "zap-report-${{ github.run_number }}.html")
           if [ -f "$FILE" ]; then
             aws s3 cp "$FILE" s3://your-bucket-name/zap-report-10.html
           else
