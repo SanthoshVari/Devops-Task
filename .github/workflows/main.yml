@@ -30,33 +30,30 @@ jobs:
           pytest --version  # Replace with pytest tests/test_app.py
 
   sonarqube-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Required for SonarQube to analyze git history
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
 
-      - name: Run SonarQube Scan
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: |
-          curl -sSL https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -o sonar-scanner.zip
-          unzip sonar-scanner.zip
-          mv sonar-scanner-5.0.1.3006-linux sonar-scanner
-          sonar-scanner/bin/sonar-scanner \
-            -Dsonar.projectKey=SanthoshVari_Devops-task \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=$SONAR_HOST_URL \
-            -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.projectVersion=${{ github.run_number }}
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@v2
+      with:
+        args: >
+          -Dsonar.projectKey=SanthoshVari_Devops-task
+          -Dsonar.organization=your_org_name
+          -Dsonar.sources=.
+          -Dsonar.projectVersion=${{ github.run_number }}
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       
       - name: Upload SonarQube report to S3
         env:
