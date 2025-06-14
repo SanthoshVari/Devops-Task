@@ -96,29 +96,40 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create reports directory
+        run: mkdir -p reports
       - name: Install Talisman
         run: |
           curl -sSL https://github.com/thoughtworks/talisman/releases/download/v1.32.0/talisman_linux_amd64 -o talisman
           chmod +x talisman
           mv talisman /usr/local/bin/
 
-      - name: Run Talisman scan
+      - name: Run Talisman scan (legacy report mode)
         run: |
-          talisman --scan --reportDirectory . --reportFile talisman-report-${{ github.run_number }}.json || true
-      - name: Run Talisman
+          talisman --scan --reportDirectory reports --reportFile talisman-report-${{ github.run_number }}.json || true
+
+      - name: Run Talisman (path-based scan)
         run: |
-          talisman -p . --report=talisman-report-${{ github.run_number }}.json
+          talisman -p . --report=reports/talisman-report-${{ github.run_number }}.json
 
       - name: Debug - Check Report File
-        run: ls -l talisman-report-${{ github.run_number }}.json || echo "File not found!"
+        run: ls -l reports/talisman-report-${{ github.run_number }}.json || echo "File not found!"
+
       - name: Upload Talisman report to S3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          aws s3 cp talisman-report-${{ github.run_number }}.json s3://${{ secrets.S3_BUCKET }}/talisman-report-${{ github.run_number }}.json
+          FILE="reports/talisman-report-${{ github.run_number }}.json"
+          if [ -f "$FILE" ]; then
+            aws s3 cp "$FILE" s3://${{ secrets.S3_BUCKET }}/talisman-report-${{ github.run_number }}.json
+          else
+            echo "Talisman report not found!"
+          fi
 
+      
+      
   owasp-zap-scan:
     runs-on: ubuntu-latest
     steps:
@@ -135,6 +146,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install flask
 
+      - name: Create reports directory
+        run: mkdir -p reports
+
       - name: Start Flask app
         run: |
           python -m flask run --host=0.0.0.0 --port=5000 &
@@ -145,25 +159,23 @@ jobs:
         with:
           target: 'http://localhost:5000'
           fail_action: false
-          cmd_options: '-r zap-report-${{ github.run_number }}.html'
-      
+          cmd_options: '-r reports/zap-report-${{ github.run_number }}.html'
+
       - name: Debug - List generated files
-        run: find . -type f
+        run: find reports -type f
 
       - name: Upload OWASP ZAP report to S3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-     
         run: |
-          FILE=$(find . -name "zap-report-${{ github.run_number }}.html")
+          FILE="reports/zap-report-${{ github.run_number }}.html"
           if [ -f "$FILE" ]; then
-            aws s3 cp "$FILE" s3://your-bucket-name/zap-report-10.html
+            aws s3 cp "$FILE" s3://${{ secrets.S3_BUCKET }}/zap-report-${{ github.run_number }}.html
           else
             echo "ZAP report not found!"
           fi
-
 
   docker-build-push:
     runs-on: ubuntu-latest
