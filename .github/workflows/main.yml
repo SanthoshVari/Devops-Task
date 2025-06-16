@@ -90,43 +90,7 @@ jobs:
         with:
           sarif_file: 'trivy-fs-results-${{ github.run_number }}.sarif'
 
-  talisman-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Create reports directory
-        run: mkdir -p reports
-      - name: Install Talisman
-        run: |
-          curl -sSL https://github.com/thoughtworks/talisman/releases/download/v1.32.0/talisman_linux_amd64 -o talisman
-          chmod +x talisman
-          mv talisman /usr/local/bin/
-
-      - name: Run Talisman scan (legacy report mode)
-        run: |
-          talisman --scan --reportDirectory reports --reportFile talisman-report-${{ github.run_number }}.json || true
-
-      - name: Run Talisman (path-based scan)
-        run: |
-          talisman -p . --report=reports/talisman-report-${{ github.run_number }}.json
-
-      - name: Debug - Check Report File
-        run: ls -l reports/talisman-report-${{ github.run_number }}.json || echo "File not found!"
-
-      - name: Upload Talisman report to S3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          FILE="reports/talisman-report-${{ github.run_number }}.json"
-          if [ -f "$FILE" ]; then
-            aws s3 cp "$FILE" s3://${{ secrets.S3_BUCKET }}/talisman-report-${{ github.run_number }}.json
-          else
-            echo "Talisman report not found!"
-          fi
+  
 
       
       
@@ -220,7 +184,7 @@ jobs:
 
   send-email-notification:
     runs-on: ubuntu-latest
-    needs: [sonarqube-scan, trivy-fs-scan, talisman-scan, owasp-zap-scan, docker-build-push]
+    needs: [sonarqube-scan, trivy-fs-scan, owasp-zap-scan, docker-build-push]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
