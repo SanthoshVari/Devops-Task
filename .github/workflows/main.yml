@@ -112,7 +112,7 @@ jobs:
 
       - name: Create reports directory
         run: |
-          mkdir -p reports
+          mkdir -p zap/wrk/reports
           touch reports.json
 
       - name: Start Flask app
@@ -199,8 +199,7 @@ jobs:
         run: |
           aws s3 cp s3://${{ secrets.S3_BUCKET }}/sonarqube-report-${{ github.run_number }}.txt sonarqube-report-${{ github.run_number }}.txt
           aws s3 cp s3://${{ secrets.S3_BUCKET }}/trivy-fs-results-${{ github.run_number }}.sarif trivy-fs-results-${{ github.run_number }}.sarif
-          aws s3 cp s3://${{ secrets.S3_BUCKET }}/talisman-report-${{ github.run_number }}.json talisman-report-${{ github.run_number }}.json
-          aws s3 cp s3://${{ secrets.S3_BUCKET }}/zap-report-${{ github.run_number }}.html zap-report-${{ github.run_number }}.html
+         
           aws s3 cp s3://${{ secrets.S3_BUCKET }}/trivy-image-results-${{ github.run_number }}.json trivy-image-results-${{ github.run_number }}.json
 
       - name: Send email with scan reports
