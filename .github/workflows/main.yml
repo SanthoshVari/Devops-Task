@@ -111,7 +111,9 @@ jobs:
           pip install flask
 
       - name: Create reports directory
-        run: mkdir -p reports
+        run: |
+          mkdir -p reports
+          cat reports.json
 
       - name: Start Flask app
         run: |
@@ -214,10 +216,10 @@ jobs:
           body: |
             CI/CD Pipeline completed for Flask App (Build #${{ github.run_number }}).
             Commit Message: ${{ github.event.head_commit.message }}
-            - Build and Test: ${{ needs.build-and-test.result }}
+            
             - SonarQube Scan: ${{ needs.sonarqube-scan.result }}
             - Trivy Filesystem Scan: ${{ needs.trivy-fs-scan.result }}
-            - Talisman Scan: ${{ needs.talisman-scan.result }}
+           
             - OWASP ZAP Scan: ${{ needs.owasp-zap-scan.result }}
             - Docker Build and Image Scan: ${{ needs.docker-build-push.result }}
             See attached reports for details.
