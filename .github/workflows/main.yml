@@ -125,7 +125,7 @@ jobs:
         with:
           target: 'http://localhost:5000'
           fail_action: false
-          cmd_options: '-r reports/zap-report-${{ github.run_number }}.html'
+          cmd_options: '-r /zap/wrk/reports/zap-report-${{ github.run_number }}.html'
 
       - name: Debug - List generated files
         run: find reports -type f
