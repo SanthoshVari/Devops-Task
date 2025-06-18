@@ -127,7 +127,8 @@ jobs:
           target: 'http://localhost:5000'
           cmd_options: |
             chown root:root /zap/wrk/zap.yaml
-            ls -lrth /zap/wrk/zap.yaml
+            pwd
+            ls -lrth /zap/wrk/
             chmod 755 /zap/wrk/zap.yaml
           allow_issue_writing: false 
           
