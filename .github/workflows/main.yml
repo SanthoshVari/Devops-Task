@@ -167,10 +167,11 @@ jobs:
 
       - name: Commit updated YAML to repo [ci skip]
         run: |
-
-          git add .
+          git config user.name "SanthoshVari"
+          git config user.email "santhosh.devopscloud@gmail.com"
+          git add . 
           git commit -m "Update image tag to ${{ github.run_number}} [ci skip]"
-          git push 
+          git push  Main
 
     
 
