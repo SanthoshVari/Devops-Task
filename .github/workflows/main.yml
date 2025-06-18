@@ -171,7 +171,7 @@ jobs:
           git config user.email "santhosh.devopscloud@gmail.com"
           git add . 
           git commit -m "Update image tag to ${{ github.run_number}} [ci skip]"
-          git push  Main
+          git push 
 
     
 
