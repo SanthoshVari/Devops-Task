@@ -2,7 +2,7 @@ name: Flask CI/CD Pipeline
 
 on:
   push:
-    branches: [Main]
+    branches: main
 
 permissions:
   contents: write
