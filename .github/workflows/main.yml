@@ -225,6 +225,4 @@ jobs:
           attachments: |
             sonarqube-report-${{ github.run_number }}.txt,
             trivy-fs-results-${{ github.run_number }}.sarif,
-            talisman-report-${{ github.run_number }}.json,
-            zap-report-${{ github.run_number }}.html,
             trivy-image-results-${{ github.run_number }}.json
