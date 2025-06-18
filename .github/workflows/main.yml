@@ -126,7 +126,7 @@ jobs:
           token: ${{ secrets.Token }} 
           target: 'http://localhost:5000'
           cmd_options: |
-            chmod a+rwx '/zap/wrk/zap.yaml'  
+            chmod 755 '/zap/wrk/zap.yaml'  
           allow_issue_writing: false 
           
          # fail_action: false
