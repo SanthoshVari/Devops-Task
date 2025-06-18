@@ -141,13 +141,13 @@ jobs:
       - name: Update image tag in manifest
         run: |
           pwd && ls -R
-          sed -i "s|__BUILD_TAG__|${{ github.run_number }}|g" K8s\flask-deployment.yml
+          sed -i "s|__BUILD_TAG__|${{ github.run_number }}|g" K8s/flask-deployment.yml
 
       - name: Commit updated YAML to repo [ci skip]
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add k8s/flask-deployment.yaml
+          git config user.name "SanthoshVari"
+          git config user.email "santhosh.devopscloud@gmail.com"
+          git add k8s/flask-deployment.yaml 
           git commit -m "Update image tag to ${{ github.run_number}} [ci skip]"
           git push origin Main
 
