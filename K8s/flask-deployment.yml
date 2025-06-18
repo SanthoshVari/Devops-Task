@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: ${{ secrets.DOCKER_USERNAME }}/flask-app:__BUILD_TAG__
+        image: ${{ secrets.DOCKER_USERNAME }}/flask-app:49
         ports:
         - containerPort: 5000
         resources:
