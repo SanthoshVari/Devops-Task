@@ -136,7 +136,7 @@ jobs:
           aws s3 cp trivy-image-results-${{ github.run_number }}.json s3://${{ secrets.S3_BUCKET }}/trivy-image-results-${{ github.run_number }}.json
   archive-s3-reports:
     runs-on: ubuntu-latest
-    needs: [sonarqube-scan, trivy-fs-scan, docker-build-push]
+    needs: [sonarqube-scan, trivy-fs-scan]
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
