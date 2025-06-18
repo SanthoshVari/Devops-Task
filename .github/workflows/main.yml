@@ -147,7 +147,7 @@ jobs:
         run: |
           git config user.name "SanthoshVari"
           git config user.email "santhosh.devopscloud@gmail.com"
-          git add k8s/flask-deployment.yaml 
+          git add k8s/flask-deployment.yml 
           git commit -m "Update image tag to ${{ github.run_number}} [ci skip]"
           git push origin Main
 
