@@ -125,7 +125,7 @@ jobs:
         with:
           token: ${{ secrets.Token }} 
           target: 'http://localhost:5000'
-          cmd_options: |
+          run: |
             chown root:root /zap/wrk/zap.yaml
             pwd
             ls -lrth /zap/wrk/
