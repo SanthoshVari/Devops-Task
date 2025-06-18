@@ -134,6 +134,25 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
           aws s3 cp trivy-image-results-${{ github.run_number }}.json s3://${{ secrets.S3_BUCKET }}/trivy-image-results-${{ github.run_number }}.json
+  archive-s3-reports:
+    runs-on: ubuntu-latest
+    needs: [sonarqube-scan, trivy-fs-scan, docker-build-push]
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Invoke Lambda Function
+        run: |
+          aws lambda invoke \
+            --function-name archive-old-reports \
+            --payload '{"bucket_name": "${{ secrets.S3_BUCKET }}"}' \
+            --cli-binary-format raw-in-base64-out \
+            response.json
+          cat response.json
   ArgoCD:
     runs-on: ubuntu-latest
     needs: docker-build-push
