@@ -110,10 +110,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install flask
 
-      - name: Create reports directory
-        run: |
-          mkdir -p zap/wrk/reports
-          touch reports.json
+     # - name: Create reports directory
+     #   run: |
+    #      mkdir -p zap/wrk/reports
+    #      touch reports.json
 
       - name: Start Flask app
         run: |
@@ -134,19 +134,17 @@ jobs:
       - name: Upload Scan Report
         uses: actions/upload-artifact@v4
         with:
-          name: zap_report-${{ github.run_number }}.html
+          name: zap-report-${{ github.run_number }}.html
           path: .
           retention-days: 1
-      - name: Debug - List generated files
-        run: find reports -type f
-
+     
       - name: Upload OWASP ZAP report to S3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          FILE="reports/zap-report-${{ github.run_number }}.html"
+          FILE="zap-report-${{ github.run_number }}.html"
           if [ -f "$FILE" ]; then
             aws s3 cp "$FILE" s3://${{ secrets.S3_BUCKET }}/zap-report-${{ github.run_number }}.html
           else
