@@ -172,6 +172,48 @@ jobs:
           git add . 
           git commit -m "Update image tag to ${{ github.run_number}} [ci skip]"
           git push 
+  send-email-notification:
+    runs-on: ubuntu-latest
+    needs: [sonarqube-scan, trivy-fs-scan, docker-build-push]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download reports from S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          aws s3 cp s3://${{ secrets.S3_BUCKET }}/sonarqube-report-${{ github.run_number }}.txt sonarqube-report-${{ github.run_number }}.txt
+          aws s3 cp s3://${{ secrets.S3_BUCKET }}/trivy-fs-results-${{ github.run_number }}.sarif trivy-fs-results-${{ github.run_number }}.sarif
+         
+          aws s3 cp s3://${{ secrets.S3_BUCKET }}/trivy-image-results-${{ github.run_number }}.json trivy-image-results-${{ github.run_number }}.json
+
+      - name: Send email with scan reports
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: 'CI/CD Pipeline Report - Flask App Build #${{ github.run_number }}'
+          to: ${{ secrets.TO_EMAIL }}
+          from: GitHub Actions <no-reply@github.com>
+          body: |
+            CI/CD Pipeline completed for Flask App (Build #${{ github.run_number }}).
+            Commit Message: ${{ github.event.head_commit.message }}
+            
+            - SonarQube Scan: ${{ needs.sonarqube-scan.result }}
+            - Trivy Filesystem Scan: ${{ needs.trivy-fs-scan.result }}
+           
+           
+            - Docker Build and Image Scan: ${{ needs.docker-build-push.result }}
+            See attached reports for details.
+          attachments: |
+            sonarqube-report-${{ github.run_number }}.txt,
+            trivy-fs-results-${{ github.run_number }}.sarif,
+            trivy-image-results-${{ github.run_number }}.json
 
     
 
