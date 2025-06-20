@@ -170,8 +170,8 @@ jobs:
           git config user.name "SanthoshVari"
           git config user.email "santhosh.devopscloud@gmail.com"
           git add . 
-          git commit -m "Update image tag to ${{ github.run_number}} [ci skip]"
-          git push 
+          git diff-index --quiet HEAD || git commit -m "Update image tag to ${{ github.run_number }} [ci skip]"
+          git diff-index --quiet HEAD || git push 
   send-email-notification:
     runs-on: ubuntu-latest
     needs: [sonarqube-scan, trivy-fs-scan, docker-build-push,ArgoCD]
