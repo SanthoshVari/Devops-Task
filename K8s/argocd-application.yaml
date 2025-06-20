@@ -11,7 +11,7 @@ spec:
     path: K8s/charts/flask-app
     helm:
       valueFiles:
-        - values.yml
+        - values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: default

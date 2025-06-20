@@ -163,7 +163,7 @@ jobs:
       - name: Update image tag in manifest
         run: |
           pwd && ls -R
-          sed -i "s/__BUILD_TAG__/${{ github.run_number }}/g" K8s/charts/flask-app/values.yml
+          sed -i "s/__BUILD_TAG__/${{ github.run_number }}/g" K8s/charts/flask-app/values.yaml
 
       - name: Commit updated YAML to repo [ci skip]
         run: |
