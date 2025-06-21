@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: kandukurisaikrishna/flask-app
-  tag:68 "67"   # Will be replaced in CI
+  tag: 67   # Will be replaced in CI
   pullPolicy: IfNotPresent
 
 namespace: default
