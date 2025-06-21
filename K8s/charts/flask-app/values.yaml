@@ -2,10 +2,14 @@ replicaCount: 2
 
 image:
   repository: kandukurisaikrishna/flask-app
-  tag: "__BUILD_TAG__"   # Will be replaced in CI
+  tag: 57   # Will be replaced in CI
   pullPolicy: IfNotPresent
 
 namespace: default
+
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn:arn:aws:iam::527111401854:role/EKSClusterRole 
 
 service:
   type: ClusterIP

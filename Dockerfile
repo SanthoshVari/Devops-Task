@@ -8,7 +8,8 @@ WORKDIR /app
 COPY app.py .
 
 
-RUN pip install --no-cache-dir flask
+RUN pip install --no-cache-dir flask boto3
+
 
 EXPOSE 5000
 
