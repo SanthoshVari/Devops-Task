@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: kandukurisaikrishna/flask-app
-  tag: 57   # Will be replaced in CI
+  tag: "__BUILD_TAG__"   # Will be replaced in CI
   pullPolicy: IfNotPresent
 
 namespace: default
