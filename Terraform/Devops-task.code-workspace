@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../Eks_Cluster_terraform/eks-install"
+		}
+	],
+	"settings": {}
+}
