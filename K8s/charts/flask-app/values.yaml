@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: kandukurisaikrishna/flask-app
-  tag: 81
+  tag: 83
   
   pullPolicy: IfNotPresent
 
