@@ -1,1 +1,1 @@
-{"Modules":[{"Key":"","Source":"","Dir":"."},{"Key":"eks","Source":"./modules/eks","Dir":"modules/eks"},{"Key":"vpc","Source":"./modules/vpc","Dir":"modules/vpc"}]}
+{"Modules":[{"Key":"","Source":"","Dir":"."},{"Key":"cloudwatch","Source":"./modules/cloudwatch","Dir":"modules/cloudwatch"},{"Key":"eks","Source":"./modules/eks","Dir":"modules/eks"},{"Key":"iam","Source":"./modules/iam","Dir":"modules/iam"},{"Key":"vpc","Source":"./modules/vpc","Dir":"modules/vpc"}]}
