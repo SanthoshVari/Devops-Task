@@ -28,12 +28,12 @@ output "eks_cluster_name" {
   value       = module.eks.cluster_name
 }
 
-output "state_bucket_name" {
-  description = "S3 bucket for Terraform state"
-  value       = aws_s3_bucket.terraform_state.id
-}
+# output "state_bucket_name" {
+#   description = "S3 bucket for Terraform state"
+#   value       = aws_s3_bucket.terraform_state.id
+# }
 
-output "dynamodb_table_name" {
-  description = "DynamoDB table for state locking"
-  value       = aws_dynamodb_table.terraform_locks.id
-}
+# output "dynamodb_table_name" {
+#   description = "DynamoDB table for state locking"
+#   value       = aws_dynamodb_table.terraform_locks.id
+# }
