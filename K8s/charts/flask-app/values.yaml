@@ -8,9 +8,6 @@ image:
 
 namespace: default
 
-serviceAccount:
-  annotations:
-    eks.amazonaws.com/role-arn:arn:aws:iam::527111401854:role/EKSClusterRole 
 
 service:
   type: ClusterIP
