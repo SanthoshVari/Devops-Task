@@ -6,8 +6,24 @@ resource "aws_eks_cluster" "main" {
     subnet_ids         = var.private_subnet_ids
     security_group_ids = [aws_security_group.eks_cluster_sg.id]
   }
+  
+  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+
+  depends_on = [
+    module.iam,
+    module.vpc
+  ]
   tags = {
     Name = var.cluster_name
+  }
+}
+
+
+resource "aws_cloudwatch_log_group" "eks_control_plane_logs" {
+  name              = "/aws/eks/${var.cluster_name}/cluster"
+  retention_in_days = 7
+  tags = {
+    Name = "${var.cluster_name}-control-plane-logs"
   }
 }
 
@@ -66,3 +82,5 @@ resource "aws_eks_node_group" "main" {
     Name = "flask-eks-node-group"
   }
 }
+
+

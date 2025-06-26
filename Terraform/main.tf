@@ -65,3 +65,10 @@ module "cloudwatch" {
   cluster_name = module.eks.cluster_name
   depends_on   = [module.eks]
 }
+
+
+module "alerts" {
+  source           = "./modules/alerts"
+  eks_cluster_name = module.eks.cluster_name
+  alert_email      = var.alert_email
+}

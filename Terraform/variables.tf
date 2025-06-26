@@ -62,3 +62,8 @@ variable "dynamodb_table_name" {
   type        = string
   default     = "terraform-locks"
 }
+
+variable "alert_email" {
+  description = "Email address for SNS notifications"
+  type        = string
+}
