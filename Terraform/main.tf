@@ -37,9 +37,11 @@ module "vpc" {
   vpc_cidr = var.vpc_cidr
   region   = var.region
 }
-
+data "aws_caller_identity" "current" {}
 module "iam" {
   source = "./modules/iam"
+   github_oidc_provider_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
+
 }
 
 module "eks" {
