@@ -8,42 +8,56 @@ Hey there! I want to walk you through how I set up a Flask application on an Ama
 The heart of this project is a simple Flask app that displays today’s date and a live clock on a webpage. It’s straightforward but does the job for testing deployments.
 
 ```python
+import logging
 from flask import Flask, render_template_string
 from datetime import datetime
+
+# Configure structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Outputs to stdout for CloudWatch
+    ]
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    today = datetime.now().strftime("%Y-%m-%d")
-    # HTML with embedded JavaScript for live time
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Flask Time App</title>
-        <script>
-            function updateTime() {{
-                const now = new Date();
-                const time = now.toLocaleTimeString();
-                document.getElementById("time").innerText = time;
-            }}
-            setInterval(updateTime, 1000);
-        </script>
-    </head>
-    <body onload="updateTime()">
-        <h2>Hello, This is a sample Flask Application!</h2>
-        <p>Today's Date: <strong>{today}</strong></p>
-        <p>Current Time: <strong id="time"></strong></p>
-    </body>
-    </html>
-    """
-    return render_template_string(html_content)
+    try:
+        today = datetime.now().strftime("%Y-%m-%d")
+        logger.info(f"Handling request for / - Today's date: {today}")
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Flask Time Application by Santosh</title>
+            <script>
+                function updateTime() {{
+                    const now = new Date();
+                    const time = now.toLocaleTimeString();
+                    document.getElementById("time").innerText = time;
+                }}
+                setInterval(updateTime, 1000);
+            </script>
+        </head>
+        <body onload="updateTime()">
+            <h2>Hello, This is a sample Flask Application!</h2>
+            <p>Today's Date: <strong>{today}</strong></p>
+            <p>Current Time: <strong id="time"></strong></p>
+        </body>
+        </html>
+        """
+        return render_template_string(html_content)
+    except Exception as e:
+        logger.error(f"Error processing request: {str(e)}", exc_info=True)
+        return "Internal Server Error", 500
 
 if __name__ == "__main__":
+    logger.info("Starting Flask application on port 5000")
     app.run(host="0.0.0.0", port=5000)
-
-
 ```
 
 ### The Dockerfile
@@ -51,22 +65,31 @@ To containerize the app, I wrote a Dockerfile using a lightweight Python 3.9 ima
 
 ```dockerfile
 
-FROM python:3.9-slim
+FROM python:3.9-slim as builder
 
-
-WORKDIR /app
-
+WORKDIR /install
 
 COPY app.py .
 
 
-RUN pip install --no-cache-dir flask
+RUN pip install --prefix=/install --no-cache-dir flask
+
+
+FROM python:3.9-slim
+
+
+RUN useradd --create-home --shell /bin/bash appuser
+
+
+WORKDIR /home/appuser/app
+COPY --from=builder /install /usr/local
+COPY app.py .
+
+
+USER appuser
 
 EXPOSE 5000
-
-
 CMD ["python", "app.py"]
-
 ```
 
 ## Table of Contents
@@ -144,6 +167,7 @@ terraform/
 │   ├── iam/
 │   ├── eks/
 │   ├── cloudwatch/
+    ├── alerts/
 ```
 
 ### Modules
@@ -151,6 +175,7 @@ terraform/
 - **IAM**: Creates roles for the EKS cluster and node group, including permissions for CloudWatch.
 - **EKS**: Deploys the EKS cluster (version 1.29) with a node group (`t3.medium`, min=1, max=3, desired=2) in private subnets.
 - **CloudWatch**: Installs CloudWatch Container Insights via Helm for logs and metrics.
+- **Alerts**: Sends aletrs based on prefixed thresholds, and uses SNS for sending alerts.
 
 ### State Locking
 To prevent conflicts in the CI/CD pipeline, I store the Terraform state in an S3 bucket (`flask-eks-terraform-state`) and use a DynamoDB table (`terraform-locks`) for locking.
@@ -348,8 +373,28 @@ permissions:
 ### Workflow Snippet
 ```yaml
 jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+      - run: terraform init
+        working-directory: Terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+      - run: terraform apply -auto-approve -var="my_ip=${{ secrets.MY_IP }}" -var="alert_email=${{ secrets.TO_EMAIL }}"
+        working-directory: Terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
   build-and-test:
     runs-on: ubuntu-latest
+    needs: terraform
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -370,6 +415,7 @@ jobs:
 
   sonarqube-scan:
     runs-on: ubuntu-latest
+    needs: terraform
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -400,6 +446,35 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
           aws s3 cp .scannerwork/report-task.txt s3://${{ secrets.S3_BUCKET }}/sonarqube-report-${{ github.run_number }}.txt
+
+  trivy-fs-scan:
+    runs-on: ubuntu-latest
+    needs: terraform
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: 'fs'
+          format: 'sarif'
+          output: 'trivy-fs-results-${{ github.run_number }}.sarif'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+
+      - name: Upload Trivy filesystem scan results to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          aws s3 cp trivy-fs-results-${{ github.run_number }}.sarif s3://${{ secrets.S3_BUCKET }}/trivy-fs-results-${{ github.run_number }}.sarif
+
+      - name: Upload Trivy filesystem scan results to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-fs-results-${{ github.run_number }}.sarif'
 
 ```
 
@@ -473,6 +548,49 @@ I wanted to keep a close eye on how my Flask app is running on EKS, so I set up 
   ```bash
   aws logs filter-log-events --log-group-name /aws/containerinsights/flask-eks-cluster/application --filter-pattern "flask-app"
   ```
+## EKS Control Plane Logging
+- Setup: Enabled via Terraform eks module for api, audit, authenticator, controllerManager, scheduler logs to /aws/eks/flask-eks-cluster/cluster with 7-day retention.
+- verify
+  ```bash
+  aws logs filter-log-events --log-group-name /aws/eks/flask-eks-cluster/cluster --filter-pattern "error"
+  ```
+#  Alerting Configuration
+
+This document describes the CloudWatch alarm configuration and alert notification setup integrated via the `alerts` module.
+
+
+
+##  CloudWatch Alarms
+
+The following alarms have been configured:
+
+- **Node CPU Utilization**  
+  Triggers when CPU usage is greater than **80%** for a continuous period of **10 minutes**.
+
+- **Node Filesystem Usage**  
+  Triggers when filesystem usage exceeds **85%**.
+
+- **Pod Restarts**  
+  Triggers if any pod restarts more than **once within 5 minutes**.
+
+
+
+##  Notifications
+
+- All alarm notifications are sent to the **`flask-app-alerts` SNS topic**.
+- The SNS topic is subscribed to **`ALERT_EMAIL`**, which receives all triggered alarm alerts.
+
+
+
+##  Verification Steps
+
+To confirm the setup is working as expected:
+
+1. Navigate to **CloudWatch > Alarms** in the AWS Console.
+2. Ensure the defined alarms are listed and their thresholds are accurate.
+3. Trigger test events if necessary to verify alarm behavior.
+4. Check **`ALERT_EMAIL`** for received notifications when alarms are triggered.
+
 
 ## Security Practices
 - Worker nodes are in private subnets, only accessible via load balancers.
